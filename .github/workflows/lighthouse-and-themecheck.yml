@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - 'releases/**'
+      - 'merge-**'
 jobs:
   lhci:
     name: Lighthouse
