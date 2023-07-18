@@ -28,3 +28,42 @@ jobs:
         uses: shopify/theme-check-action@v1
         with:
           token: ${{ github.token }}
+  assign-reviewer:
+    name: Assign Reviewer
+    needs: [lhci, theme-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Reviewer
+        id: assign-reviewer
+        run: |
+          TEAM_MEMBERS_MRINAL=("RoyMarmeto" "b" "c")
+          TEAM_MEMBERS_DHANUSH=("d" "e" "f")
+          REVIEWERS=()
+
+          for member in "${{ github.actor }}"; do
+            if [[ "${TEAM_MEMBERS_MRINAL[@]}" =~ "${member}" ]]; then
+              REVIEWERS+=("RoyMarmeto")
+            elif [[ "${TEAM_MEMBERS_DHANUSH[@]}" =~ "${member}" ]]; then
+              REVIEWERS+=("dhanush")
+            fi
+          done
+
+          echo "::set-output name=reviewers::${REVIEWERS[*]}"
+      - name: Request Review
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const reviewers = "${{ needs.assign-reviewer.outputs.reviewers }}".split(",");
+            const context = github.context;
+            const pullRequest = context.payload.pull_request;
+            const pullRequestId = pullRequest.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            await github.pulls.requestReviewers({
+              owner,
+              repo,
+              pull_number: pullRequestId,
+              reviewers
+            });
+
