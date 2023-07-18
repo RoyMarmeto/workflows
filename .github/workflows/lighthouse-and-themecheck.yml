@@ -1,6 +1,9 @@
 name: CI
 run-name: Lighthouse and Theme Check is in progress
-on: [push]
+on:
+  pull_request:
+    branches:
+      - 'merge-**'
 jobs:
   lhci:
     name: Lighthouse
